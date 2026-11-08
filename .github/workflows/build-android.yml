@@ -1,0 +1,41 @@
+name: Build PALDY Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Extract PALDY project
+        run: unzip PALDY_PAYMENT_ALL_MOBILE_V2.zip -d source
+
+      - name: Build APK
+        working-directory: source/PALDY_Mobile
+        run: |
+          flutter create --platforms=android .
+          flutter pub get
+          flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PALDY-Android-APK
+          path: source/PALDY_Mobile/build/app/outputs/flutter-apk/app-release.apk
